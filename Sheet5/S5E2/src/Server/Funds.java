@@ -6,11 +6,11 @@ import java.util.ArrayList;
 
 public interface Funds extends Remote {
 
-    public StocksImplementation searchStock(String name) throws RemoteException;
+    public Stocks searchStock(String name) throws RemoteException;
 
     public void addStock(String name, double dividend, int quantity) throws RemoteException;
 
-    public ArrayList<StocksImplementation> getStocks() throws RemoteException;
+    public ArrayList<Stocks> getStocks() throws RemoteException;
 
     public String getName() throws RemoteException;
 
