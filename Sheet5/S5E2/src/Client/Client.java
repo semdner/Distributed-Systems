@@ -27,7 +27,10 @@ public class Client {
             System.out.println("Stock name: " + rf1.getStocks().get(3).getName());
             System.out.println("Stock dividend: " + rf1.getStocks().get(3).getDividend());
             System.out.println("Stock quantity: " + rf1.getStocks().get(3).getQuantity());
-            System.out.println("Stock reference: " + rf1.searchStock("HP"));
+            System.out .println("Stock reference: " + rf1.searchStock("HP"));
+            System.out.println("Get name by reference: " + rf1.searchStock("HP").getName());
+            rf1.searchStock("HP").setQuantity(12);
+            System.out.println("Get quantity by reference: " + rf1.searchStock("HP").getQuantity() + "\n");
             System.out.println("====================\n");
 
 
