@@ -1,6 +1,5 @@
-package Receiver;
+package com.example.s7e3;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Funds {
@@ -8,9 +7,6 @@ public class Funds {
     private String name;
     ArrayList<Stocks> stocks = new ArrayList<>();
 
-    public Funds() {
-
-    }
     public Funds(String name) {
         this.name = name;
     }
@@ -34,14 +30,6 @@ public class Funds {
 
     public String getName() {
         return name;
-    }
-
-    public ArrayList<String> getStocksNames() {
-        ArrayList<String> names = new ArrayList<>();
-        for (int i = 0; i < stocks.size(); i++) {
-            names.add(stocks.get(i).getName());
-        }
-        return names;
     }
 
 }

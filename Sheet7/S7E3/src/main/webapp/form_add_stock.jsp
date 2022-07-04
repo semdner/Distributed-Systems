@@ -1,0 +1,26 @@
+<%@ page import="com.example.s7e3.Funds" %><%--
+  Created by IntelliJ IDEA.
+  User: max
+  Date: 04.07.22
+  Time: 10:32
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    String selected_fund = (String)session.getAttribute("selected");
+    Funds fund = (Funds)session.getAttribute(selected_fund);
+%>
+<html>
+<head>
+    <title>Search Stock Form</title>
+</head>
+<body>
+<h1><%= "Add Stock for Fund: " + fund.getName() %></h1>
+<form action="add-stock">
+Stock Name: <input type="text" name="stock_name"><br/>
+Dividend: <input type="text" name="dividend"><br/>
+Quantity: <input type="text" name="quantity"><br/>
+<input type="submit" name="submit" value="Add Stock">
+</form>
+</body>
+</html>

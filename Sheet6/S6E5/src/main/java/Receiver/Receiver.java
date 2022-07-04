@@ -7,125 +7,57 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Scanner;
 
 public class Receiver {
 
     public static void main(String[] args) throws Exception {
-        // JMS properties
+        Funds f1 = new Funds("Fund 1");
+        f1.addStock("apple", 6.4, 10);
+        f1.addStock("paypal", 3, 1);
+        f1.addStock("tesla", 7, 100);
+
+        Funds f2 = new Funds("Fund 2");
+        f2.addStock("microsoft", 6.4, 1);
+        f2.addStock("hp", 3, 100);
+        f2.addStock("blackrock", 7, 1);
+
         Hashtable<String, String> properties = new Hashtable<String, String>();
-        properties.put(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+        properties.put(Context.INITIAL_CONTEXT_FACTORY,
+                "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
         properties.put(Context.PROVIDER_URL, "tcp://localhost:61616");
 
         Context context = new InitialContext(properties);
 
-        // search for queue
-        TopicConnectionFactory connFactory = (TopicConnectionFactory) context.lookup("ConnectionFactory");
+        TopicConnectionFactory connFactory =
+                (TopicConnectionFactory)context.lookup("ConnectionFactory");
 
-        TopicConnection connection = connFactory.createTopicConnection();
-        TopicSession session = connection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-        Topic t = (Topic) context.lookup("dynamicTopics/topic1");
-
-        TopicSubscriber subscriber = session.createSubscriber(t);
-        connection.start();
-
-        // receive message
-        Message message = subscriber.receive();
-
-        // Create Funds
-        Funds fund1 = new Funds("Fund1");
-        fund1.addStock("apple", 6.7, 6);
-        fund1.addStock("tesla", 3.2, 8);
-        Funds fund2 = new Funds("Fund2");
-
-        if(message instanceof TextMessage received) {
-            Topic t2 = (Topic) context.lookup("dynamicTopics/topic2");
-
-            TopicPublisher publisher = session.createPublisher(t2);
-
-            System.out.println("Message Received: " + received.getText());
-
-            // split message
-            String[] received_str = received.getText().split("\\|");
-
-            if(Integer.parseInt(received_str[0]) == 1) {
-
-                switch (Integer.parseInt(received_str[1])) {
-                    case 1 -> {
-                        String[] stock = received_str[2].split(",");
-                        fund1.addStock(stock[0], Double.parseDouble(stock[1]), Integer.parseInt(stock[2]));
-                        TextMessage reply = session.createTextMessage();
-                        reply.setText("Successfully added");
-                        publisher.publish(reply);
-                    }
-                    case 2 -> {
-                        ArrayList<String> names = fund1.getStocksNames();
-                        TextMessage reply = session.createTextMessage();
-                        StringBuilder reply_message = new StringBuilder();
-                        for(int i = 0; i < names.size(); i++) {
-                            if(i == names.size()-1) {
-                                assert false;
-                                reply_message.append(names.get(i));
-                            } else {
-                                assert false;
-                                reply_message.append(names.get(i)).append("|");
-                            }
-                        }
-                        assert false;
-                        reply.setText(reply_message.toString());
-                        publisher.publish(reply);
-                    }
-                    case 3 -> {
-                        TextMessage reply = session.createTextMessage();
-                        reply.setText(String.valueOf(fund1.searchStock(received_str[2]).getDividend()));
-                        publisher.publish(reply);
-                    }
-                }
+        TopicConnection conn = connFactory.createTopicConnection();
+        conn.start();
+        TopicSession session = conn.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+        Topic qr = (Topic) context.lookup("dynamicTopics/topic1");
+        Topic qs = (Topic) context.lookup("dynamicTopics/topic2");
 
 
-            } else if(Integer.parseInt(received_str[0]) == 2) {
+        TopicSubscriber subscriber = session.createSubscriber(qr);
+        TopicPublisher Publisher = session.createPublisher(qs);
 
-                switch (Integer.parseInt(received_str[1])) {
-                    case 1 -> {
-                        String[] stock = received_str[2].split(",");
-                        fund2.addStock(stock[0], Double.parseDouble(stock[1]), Integer.parseInt(stock[2]));
-                        TextMessage reply = session.createTextMessage();
-                        reply.setText("Successfully added");
-                        publisher.publish(reply);
-                    }
-                    case 2 -> {
-                        ArrayList<String> names = fund2.getStocksNames();
-                        TextMessage reply = session.createTextMessage();
-                        StringBuilder reply_message = new StringBuilder();
-                        for(int i = 0; i < names.size(); i++) {
-                            if(i == names.size()-1) {
-                                assert false;
-                                reply_message.append(names.get(i));
-                            } else {
-                                assert false;
-                                reply_message.append(names.get(i)).append("|");
-                            }
-                        }
-                        assert false;
-                        reply.setText(reply_message.toString());
-                        publisher.publish(reply);
-                    }
-                    case 3 -> {
-                        TextMessage reply = session.createTextMessage();
-                        reply.setText(String.valueOf(fund2.searchStock(received_str[2]).getDividend()));
-                        publisher.publish(reply);
-                    }
-                }
+        System.out.println("Server is up!");
 
+        Scanner scanner = new Scanner(System.in);
+        FundsMessageListener listener = new FundsMessageListener(Publisher, subscriber, session, f1, f2);
+        subscriber.setMessageListener(listener);
+
+        boolean terminate =  false;
+        while (!terminate){
+            subscriber.setMessageListener(listener);
+            if(scanner.hasNext()){
+                terminate = true;
             }
-
         }
-
-        // Close session
+        System.out.println("Server is terminated!");
         session.close();
-
-        // Close connection
-        connection.close();
-
+        conn.close();
     }
 
 }
