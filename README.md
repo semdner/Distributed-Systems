@@ -30,3 +30,7 @@ Arguments can be added after the name of the file. Those are stored in the param
 ```
 java Main Argument1 Argument2
 ```
+
+### Using an IDE
+
+Instead of compiling the files via the terminal, an IDE like IntelliJ can be used. This is especially recommended for the exercises with dependencies that are managed via Maven.
